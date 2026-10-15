@@ -68,27 +68,31 @@ sitegrade -min-grade B example.com
 
 ### Example output
 
-Illustrative only; run it yourself and replace this with real output.
+ Example output, auditing a local Python test server (plain HTTP, no security headers):
 
 ```
-Target:  example.com
-Final:   https://example.com/
-Grade:   B   (score 83/100)
-TLS:     TLS 1.2, TLS 1.3
-Cert:    example.com, issued by Example CA, RSA 2048, expires 2027-02-01 (112 days)
+Target:  http://127.0.0.1:8000
+Final:   http://127.0.0.1:8000/
+Grade:   F   (score 19/100)
 
-STATUS  CATEGORY   CHECK                      DETAIL
-PASS    transport  HTTP to HTTPS redirect     Plain HTTP redirects to HTTPS (status 301).
-PASS    tls        Legacy protocols           TLS 1.0 and 1.1 are disabled.
-PASS    tls        TLS 1.3                    TLS 1.3 is supported.
-PASS    tls        Certificate trust          Certificate is trusted and matches the hostname.
-PASS    tls        Certificate expiry         Expires in 112 days (2027-02-01).
-PASS    headers    Strict-Transport-Security  max-age=31536000, includeSubDomains
-FAIL    headers    Content-Security-Policy    Header is missing, so the browser has no policy ...
-...
+STATUS  CATEGORY   CHECK                    DETAIL
+FAIL    transport  HTTPS                    The site is served over plain HTTP, so all traffic can be read or altered in transit.
+FAIL    headers    Content-Security-Policy  Header is missing, so the browser has no policy limiting scripts and other content.
+FAIL    headers    Clickjacking protection  Neither X-Frame-Options nor CSP frame-ancestors is set, so other sites can frame this page.
+WARN    headers    X-Content-Type-Options   Header is missing or not set to nosniff, so browsers may guess content types.
+WARN    headers    Referrer-Policy          Header is missing, so full page URLs may leak to other sites.
+WARN    headers    Permissions-Policy       Header is missing, so powerful browser features are not explicitly restricted.
+WARN    headers    Technology disclosure    Headers reveal software details: Server: SimpleHTTP/0.6 Python/3.13.15
+PASS    cookies    Set-Cookie               No cookies were set on this response.
 
 How to fix:
+  - HTTPS: Serve the site over HTTPS with a valid certificate and redirect HTTP to it.
   - Content-Security-Policy: Start with: Content-Security-Policy: default-src 'self'
+  - Clickjacking protection: Add: Content-Security-Policy: frame-ancestors 'self' (or X-Frame-Options: DENY).
+  - X-Content-Type-Options: Add: X-Content-Type-Options: nosniff
+  - Referrer-Policy: Add: Referrer-Policy: strict-origin-when-cross-origin
+  - Permissions-Policy: Add, for example: Permissions-Policy: camera=(), microphone=(), geolocation=()
+  - Technology disclosure: Remove X-Powered-By and hide version numbers in the Server header.
 ```
 
 ## How grading works
