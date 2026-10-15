@@ -1,0 +1,16 @@
+# Binaries
+/sitegrade
+/sitegrade.exe
+/dist/
+
+# Test / coverage output
+*.out
+coverage.html
+
+# Reports
+/report.*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
